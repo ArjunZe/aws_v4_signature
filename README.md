@@ -1,1 +1,1 @@
-AWS V4 Sample in java
+AWS V4 Signature in plain java.

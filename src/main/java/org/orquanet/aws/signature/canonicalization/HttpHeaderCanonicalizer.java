@@ -1,13 +1,31 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ * 
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package org.orquanet.aws.signature.canonicalization;
 
-import org.orquanet.aws.signature.canonicalization.exception.CanonicalizerException;
-
+import java.util.Collection;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-class HttpHeaderCanonicalizer {
+import org.orquanet.aws.signature.canonicalization.exception.CanonicalizerException;
 
-    public String getSignedHttpHeaders(final Map<String, String> httpHeaders) {
+final class HttpHeaderCanonicalizer {
+
+    public String getSignedHttpHeaders(final Map<String, Collection<String>> httpHeaders) {
         if (httpHeaders == null || httpHeaders.isEmpty()) {
             throw new CanonicalizerException("Missing http headers");
         }
@@ -18,7 +36,29 @@ class HttpHeaderCanonicalizer {
                 .collect(Collectors.joining(";"));
     }
 
-    public String canonicalize(final Map<String, String> httpHeaders) {
+    public String canonicalize(final Map<String, Collection<String>> httpHeaders) {
+    	  if (httpHeaders == null || httpHeaders.isEmpty()) {
+              throw new CanonicalizerException("Missing http headers");
+          }
+
+          return httpHeaders.entrySet()
+                  .stream()
+                  .sorted(Map.Entry.comparingByKey())
+                  
+                                    .map(e -> String.format("%s:%s\n", e.getKey().toLowerCase(), 
+                                    		e.getValue().stream()
+                                    		.map(
+                                    				(s) -> {return (s == null)?"":s.trim().replaceAll(" +", " ");})
+                                    		        .collect(Collectors.joining(",")))).collect(Collectors.joining());
+                                    		
+                                    		
+                                    			//s.getValue() == null ? "" : e.getValue().trim().replaceAll(" +", " ");}).
+ //                 .collect(Collectors.joining());
+    	
+    	 
+    }
+    
+/*    public String canonicalize(final Map<String, String> httpHeaders) {
 
         if (httpHeaders == null || httpHeaders.isEmpty()) {
             throw new CanonicalizerException("Missing http headers");
@@ -27,7 +67,8 @@ class HttpHeaderCanonicalizer {
         return httpHeaders.entrySet()
                 .stream()
                 .sorted(Map.Entry.comparingByKey())
-                .map(e -> String.format("%s:%s\n", e.getKey().toLowerCase(), e.getValue() == null ? "" : e.getValue().trim()))
+                .map(e -> String.format("%s:%s\n", e.getKey().toLowerCase(), e.getValue() == null ? "" : e.getValue().trim().replaceAll(" +", " ")))
                 .collect(Collectors.joining());
     }
+    */
 }
